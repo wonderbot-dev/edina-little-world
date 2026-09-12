@@ -1,0 +1,53 @@
+name: Build SonicAI APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create Flutter project
+        run: |
+          flutter create \
+            --project-name sonicai \
+            --org com.sonicai \
+            /tmp/sonicai_app
+
+      - name: Copy SonicAI source
+        run: |
+          cp pubspec.yaml /tmp/sonicai_app/pubspec.yaml
+          rm -rf /tmp/sonicai_app/lib
+          cp -r lib /tmp/sonicai_app/lib
+
+      - name: Add microphone permission
+        run: |
+          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO"/>' \
+          /tmp/sonicai_app/android/app/src/main/AndroidManifest.xml
+
+      - name: Get dependencies
+        working-directory: /tmp/sonicai_app
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: /tmp/sonicai_app
+        run: flutter build apk --debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SonicAI-debug-APK
+          path: /tmp/sonicai_app/build/app/outputs/flutter-apk/app-debug.apk
