@@ -57,42 +57,54 @@ class HomePage extends StatelessWidget {
                   style: TextStyle(fontSize: 17),
                 ),
                 const SizedBox(height: 25),
-
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 2,
                     mainAxisSpacing: 16,
                     crossAxisSpacing: 16,
-                    children: const [
+                    children: [
                       MenuCard(
                         icon: "🎮",
                         title: "Play",
                         subtitle: "Let's play!",
+                        onTap: () {},
                       ),
                       MenuCard(
                         icon: "📚",
                         title: "Learn",
                         subtitle: "New words",
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ColorsPage(),
+                            ),
+                          );
+                        },
                       ),
                       MenuCard(
                         icon: "📖",
                         title: "Story",
                         subtitle: "Story time",
+                        onTap: () {},
                       ),
                       MenuCard(
                         icon: "🎵",
                         title: "Songs",
                         subtitle: "Sing with me",
+                        onTap: () {},
                       ),
                       MenuCard(
                         icon: "👨‍👩‍👧",
                         title: "Family",
                         subtitle: "Play together",
+                        onTap: () {},
                       ),
                       MenuCard(
                         icon: "⭐",
                         title: "My World",
                         subtitle: "My stars",
+                        onTap: () {},
                       ),
                     ],
                   ),
@@ -110,12 +122,14 @@ class MenuCard extends StatelessWidget {
   final String icon;
   final String title;
   final String subtitle;
+  final VoidCallback onTap;
 
   const MenuCard({
     super.key,
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.onTap,
   });
 
   @override
@@ -127,16 +141,13 @@ class MenuCard extends StatelessWidget {
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(24),
-        onTap: () {},
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(18),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                icon,
-                style: const TextStyle(fontSize: 42),
-              ),
+              Text(icon, style: const TextStyle(fontSize: 42)),
               const SizedBox(height: 10),
               Text(
                 title,
@@ -152,6 +163,91 @@ class MenuCard extends StatelessWidget {
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class ColorsPage extends StatelessWidget {
+  const ColorsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = [
+      ("Red", "🔴", Colors.red),
+      ("Blue", "🔵", Colors.blue),
+      ("Green", "🟢", Colors.green),
+      ("Yellow", "🟡", Colors.amber),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Colors 🎨"),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: GridView.builder(
+          itemCount: colors.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+          ),
+          itemBuilder: (context, index) {
+            final item = colors[index];
+
+            return Card(
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(25),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: Text(item.$2),
+                      content: Text(
+                        item.$1,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Great! ⭐"),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        item.$2,
+                        style: const TextStyle(fontSize: 55),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        item.$1,
+                        style: const TextStyle(
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
