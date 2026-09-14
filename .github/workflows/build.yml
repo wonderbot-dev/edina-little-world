@@ -20,29 +20,22 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Create Flutter project
+      - name: Create Android project
         run: |
           flutter create \
             --project-name edina_little_world \
             --org com.edina \
-            /tmp/edina_app
-
-      - name: Copy Edina source
-        run: |
-          cp pubspec.yaml /tmp/edina_app/pubspec.yaml
-          rm -rf /tmp/edina_app/lib
-          cp -r lib /tmp/edina_app/lib
+            --platforms=android \
+            .
 
       - name: Get dependencies
-        working-directory: /tmp/edina_app
         run: flutter pub get
 
-      - name: Build APK
-        working-directory: /tmp/edina_app
-        run: flutter build apk --debug
+      - name: Build Edina APK
+        run: flutter build apk --debug --build-name=1.0.1 --build-number=2
 
-      - name: Upload APK
+      - name: Upload Edina APK
         uses: actions/upload-artifact@v4
         with:
-          name: Edina-Little-World-debug-APK
-          path: /tmp/edina_app/build/app/outputs/flutter-apk/app-debug.apk
+          name: Edina-Little-World-v1.0.1-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
