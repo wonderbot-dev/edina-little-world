@@ -1,4 +1,4 @@
-name: Build SonicAI APK
+name: Build Edina Little World APK
 
 on:
   workflow_dispatch:
@@ -23,31 +23,26 @@ jobs:
       - name: Create Flutter project
         run: |
           flutter create \
-            --project-name sonicai \
-            --org com.sonicai \
-            /tmp/sonicai_app
+            --project-name edina_little_world \
+            --org com.edina \
+            /tmp/edina_app
 
-      - name: Copy SonicAI source
+      - name: Copy Edina source
         run: |
-          cp pubspec.yaml /tmp/sonicai_app/pubspec.yaml
-          rm -rf /tmp/sonicai_app/lib
-          cp -r lib /tmp/sonicai_app/lib
-
-      - name: Add microphone permission
-        run: |
-          sed -i '/<manifest/a\    <uses-permission android:name="android.permission.RECORD_AUDIO"/>' \
-          /tmp/sonicai_app/android/app/src/main/AndroidManifest.xml
+          cp pubspec.yaml /tmp/edina_app/pubspec.yaml
+          rm -rf /tmp/edina_app/lib
+          cp -r lib /tmp/edina_app/lib
 
       - name: Get dependencies
-        working-directory: /tmp/sonicai_app
+        working-directory: /tmp/edina_app
         run: flutter pub get
 
       - name: Build APK
-        working-directory: /tmp/sonicai_app
+        working-directory: /tmp/edina_app
         run: flutter build apk --debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: SonicAI-debug-APK
-          path: /tmp/sonicai_app/build/app/outputs/flutter-apk/app-debug.apk
+          name: Edina-Little-World-debug-APK
+          path: /tmp/edina_app/build/app/outputs/flutter-apk/app-debug.apk
