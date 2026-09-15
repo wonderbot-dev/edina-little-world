@@ -3250,11 +3250,41 @@ class _TimePageState extends State<TimePage> {
           score += quizCorrect;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              "⭐ Quiz finished! $quizCorrect / 5 correct!",
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text("🎉 Quiz Complete!"),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const AdinaPhoto(
+                  size: 100,
+                  message: "Great job, Adina! 🌈",
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  "⭐ You got $quizCorrect / 5 correct!",
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 21,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  startQuiz();
+                },
+                child: const Text("Play Again 🔄"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Awesome! ⭐"),
+              ),
+            ],
           ),
         );
       }
