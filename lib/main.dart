@@ -156,7 +156,7 @@ class AppProgress {
   }
 }
 
-Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AppProgress.recordDailyActivity(); runApp(const AdinaApp()); }
+Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AdinaCharacter.loadMood(); await AppProgress.recordDailyActivity(); runApp(const AdinaApp()); }
 
 class Voice {
   static final FlutterTts tts = FlutterTts();
@@ -188,9 +188,14 @@ class AdinaCharacter {
 
   static String currentMood = "happy";
 
+  static Future<void> loadMood() async {
+    currentMood = _prefs?.getString('adina_mood') ?? "happy";
+  }
+
   static void setMood(String mood) {
     if (moods.contains(mood)) {
       currentMood = mood;
+      _prefs?.setString('adina_mood', mood);
     }
   }
 
