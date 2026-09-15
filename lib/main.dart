@@ -186,6 +186,14 @@ class AdinaCharacter {
     "thinking",
   ];
 
+  static String currentMood = "happy";
+
+  static void setMood(String mood) {
+    if (moods.contains(mood)) {
+      currentMood = mood;
+    }
+  }
+
   static String greeting(String mood) {
     switch (mood) {
       case "excited":
@@ -199,6 +207,10 @@ class AdinaCharacter {
       default:
         return "Hello! I am Adina! 👋";
     }
+  }
+
+  static String currentGreeting() {
+    return greeting(currentMood);
   }
 }
 
@@ -2515,6 +2527,7 @@ class _StoryReaderPageState extends State<StoryReaderPage> {
 
       await _savePosition();
     } else {
+      AdinaCharacter.setMood("excited");
       await AppProgress.addReward(2);
 
       if (mounted) {
@@ -2912,6 +2925,7 @@ class _SpeakingPageState extends State<SpeakingPage> {
       practiced = true;
     });
 
+    AdinaCharacter.setMood("excited");
     await AppProgress.addReward(1);
 
     if (mounted) {
