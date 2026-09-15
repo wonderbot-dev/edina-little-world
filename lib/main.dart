@@ -163,7 +163,7 @@ class AppProgress {
   }
 }
 
-Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AdinaCharacter.loadMood(); await AppProgress.recordDailyActivity(); runApp(const AdinaApp()); }
+Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AdinaCharacter.loadMood(); await AppProgress.recordDailyActivity(); runApp(const MaterialApp(home: AdinaApp())); }
 
 class Voice {
   static final FlutterTts tts = FlutterTts();
