@@ -222,6 +222,62 @@ class AdinaCharacter {
   }
 }
 
+
+class AdinaPhoto extends StatelessWidget {
+  final double size;
+  final String? message;
+
+  const AdinaPhoto({
+    super.key,
+    this.size = 110,
+    this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: size,
+          height: size,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: Colors.purple.shade200,
+              width: 4,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                blurRadius: 12,
+                offset: Offset(0, 5),
+                color: Color(0x22000000),
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              AdinaCharacter.photo,
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+        if (message != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            message!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class AdinaApp extends StatelessWidget {
   const AdinaApp({super.key});
 
@@ -686,7 +742,13 @@ class DailyLessonPage extends StatelessWidget {
                 padding: const EdgeInsets.all(22),
                 child: Column(
                   children: [
-                    const Text(
+                    const AdinaPhoto(
+                size: 95,
+                message: "Let's learn together! 🌈",
+              ),
+              const SizedBox(height: 18),
+
+              const Text(
                       "Today's Little Mission 🌈",
                       textAlign: TextAlign.center,
                       style: TextStyle(
@@ -1029,6 +1091,12 @@ class _SmartReviewPageState extends State<SmartReviewPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        const AdinaPhoto(
+                          size: 85,
+                          message: "Let's review together! 🌈",
+                        ),
+                        const SizedBox(height: 14),
+
                         const Text(
                           "🧠",
                           style: TextStyle(fontSize: 70),
@@ -3381,6 +3449,12 @@ class _TimePageState extends State<TimePage> {
             ),
 
             const SizedBox(height: 20),
+
+            const AdinaPhoto(
+              size: 90,
+              message: "You are doing great! 🌈",
+            ),
+            const SizedBox(height: 16),
 
             Text(
               "⭐ Score: $score",
