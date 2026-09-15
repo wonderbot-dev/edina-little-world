@@ -18,7 +18,7 @@ class AppProgress {
       _prefs?.getString('adina_mood') ?? "happy";
 
   static Future<void> setAdinaMood(String mood) async {
-    await AppProgress.setAdinaMood(mood);
+    await _prefs?.setString("adina_mood", mood);
   }
 
   static Future<void> setStars(int value) async {
