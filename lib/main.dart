@@ -3122,6 +3122,11 @@ class _TimePageState extends State<TimePage> {
   int currentHour = 3;
   bool showHalfHours = false;
   int score = 0;
+  bool quizMode = false;
+  int quizHour = 3;
+  bool quizHalf = false;
+  int quizQuestion = 0;
+  int quizCorrect = 0;
 
   String get timeText =>
       showHalfHours ? "$currentHour:30" : "$currentHour:00";
@@ -3140,6 +3145,61 @@ class _TimePageState extends State<TimePage> {
         showHalfHours = true;
       }
     });
+  }
+
+  void startQuiz() {
+    setState(() {
+      quizMode = true;
+      quizQuestion = 0;
+      quizCorrect = 0;
+      quizHour = 3;
+      quizHalf = false;
+    });
+  }
+
+  void nextQuizQuestion() {
+    setState(() {
+      quizQuestion++;
+      quizHour = ((quizQuestion * 3) % 12) + 1;
+      quizHalf = quizQuestion.isOdd;
+    });
+  }
+
+  Future<void> answerQuiz(int selectedHour, bool selectedHalf) async {
+    final correct = selectedHour == quizHour && selectedHalf == quizHalf;
+
+    if (correct) {
+      quizCorrect++;
+      await AppProgress.addReward(1);
+      await AppProgress.addDailyProgress();
+      AdinaCharacter.setMood("proud");
+    }
+
+    if (quizQuestion >= 4) {
+      if (mounted) {
+        setState(() {
+          quizMode = false;
+          score += quizCorrect;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              "⭐ Quiz finished! $quizCorrect / 5 correct!",
+            ),
+          ),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
+      setState(() {
+        quizQuestion++;
+        quizHour = ((quizQuestion * 3) % 12) + 1;
+        quizHalf = quizQuestion.isOdd;
+      });
+    }
   }
 
   Future<void> speakTime() async {
@@ -3166,9 +3226,12 @@ class _TimePageState extends State<TimePage> {
 
   @override
   Widget build(BuildContext context) {
-    final hourAngle = (currentHour % 12) * 30.0 +
-        (showHalfHours ? 15.0 : 0.0);
-    final minuteAngle = showHalfHours ? 180.0 : 0.0;
+    final displayHour = quizMode ? quizHour : currentHour;
+    final displayHalf = quizMode ? quizHalf : showHalfHours;
+
+    final hourAngle = (displayHour % 12) * 30.0 +
+        (displayHalf ? 15.0 : 0.0);
+    final minuteAngle = displayHalf ? 180.0 : 0.0;
 
     return Scaffold(
       appBar: AppBar(
@@ -3326,7 +3389,61 @@ class _TimePageState extends State<TimePage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ],
+          
+            const SizedBox(height: 24),
+
+            if (!quizMode)
+              ElevatedButton.icon(
+                onPressed: startQuiz,
+                icon: const Icon(Icons.play_arrow),
+                label: const Text(
+                  "🎮 Play Clock Quiz",
+                  style: TextStyle(fontSize: 18),
+                ),
+              ),
+
+            if (quizMode) ...[
+              const SizedBox(height: 12),
+              Text(
+                "Question ${quizQuestion + 1} / 5",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                quizHalf
+                    ? "What time is it? 🕧"
+                    : "What time is it? 🕐",
+                style: const TextStyle(fontSize: 22),
+              ),
+              const SizedBox(height: 12),
+
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                alignment: WrapAlignment.center,
+                children: [
+                  for (final option in [
+                    [quizHour, quizHalf],
+                    [quizHour == 12 ? 1 : quizHour + 1, quizHalf],
+                    [quizHour == 11 ? 1 : quizHour + 2, !quizHalf],
+                  ])
+                    ElevatedButton(
+                      onPressed: () => answerQuiz(
+                        option[0] as int,
+                        option[1] as bool,
+                      ),
+                      child: Text(
+                        "${option[0]}:${(option[1] as bool) ? '30' : '00'}",
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+],
         ),
       ),
     );
