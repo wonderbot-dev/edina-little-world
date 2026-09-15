@@ -430,7 +430,13 @@ class AdinaApp extends StatelessWidget {
                       subtitle: "Listen & Speak",
                       onTap: () => open(const SpeakingPage()),
                     ),
-                    MenuCard(
+                                        MenuCard(
+                      icon: "⏰",
+                      title: "Time",
+                      subtitle: "Learn the Clock",
+                      onTap: () => open(const TimePage()),
+                    ),
+MenuCard(
                       icon: "🧠",
                       title: "Smart Review",
                       subtitle: "Practice Words",
@@ -946,6 +952,7 @@ class _SmartReviewPageState extends State<SmartReviewPage> {
 
     if (easy) {
       await AppProgress.markWordEasy(word);
+      AdinaCharacter.setMood("proud");
       widget.onReward(1);
     } else {
       await AppProgress.markWordHard(word);
@@ -3094,6 +3101,230 @@ class ProgressPage extends StatelessWidget {
             const Text(
               "Keep playing and learning! 🌈",
               style: TextStyle(fontSize: 18),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class TimePage extends StatefulWidget {
+  const TimePage({super.key});
+
+  @override
+  State<TimePage> createState() => _TimePageState();
+}
+
+class _TimePageState extends State<TimePage> {
+  final List<int> hours = List.generate(12, (i) => i + 1);
+  int currentHour = 3;
+  bool showHalfHours = false;
+  int score = 0;
+
+  String get timeText =>
+      showHalfHours ? "$currentHour:30" : "$currentHour:00";
+
+  String get spokenTime =>
+      showHalfHours
+          ? "It's half past $currentHour."
+          : "It's $currentHour o'clock.";
+
+  void nextTime() {
+    setState(() {
+      if (showHalfHours) {
+        showHalfHours = false;
+        currentHour = currentHour == 12 ? 1 : currentHour + 1;
+      } else {
+        showHalfHours = true;
+      }
+    });
+  }
+
+  Future<void> speakTime() async {
+    await Voice.speak(spokenTime);
+  }
+
+  Future<void> learned() async {
+    await AppProgress.addReward(1);
+    await AppProgress.addDailyProgress();
+    AdinaCharacter.setMood("proud");
+
+    if (mounted) {
+      setState(() {
+        score++;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("⭐ Great job, Adina!"),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final hourAngle = (currentHour % 12) * 30.0 +
+        (showHalfHours ? 15.0 : 0.0);
+    final minuteAngle = showHalfHours ? 180.0 : 0.0;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("⏰ Learn the Clock"),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const Text(
+              "What time is it?",
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            Container(
+              width: 260,
+              height: 260,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(width: 6),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 12,
+                    offset: Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  for (int i = 1; i <= 12; i++)
+                    Transform.rotate(
+                      angle: i * 3.1415926535 / 6,
+                      child: Align(
+                        alignment: Alignment.topCenter,
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Transform.rotate(
+                            angle: -i * 3.1415926535 / 6,
+                            child: Text(
+                              "$i",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  Transform.rotate(
+                    angle: hourAngle * 3.1415926535 / 180,
+                    child: Container(
+                      width: 7,
+                      height: 75,
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        width: 7,
+                        height: 55,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Transform.rotate(
+                    angle: minuteAngle * 3.1415926535 / 180,
+                    child: Container(
+                      width: 5,
+                      height: 105,
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        width: 5,
+                        height: 85,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  Container(
+                    width: 16,
+                    height: 16,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Text(
+              timeText,
+              style: const TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+
+            Text(
+              spokenTime,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: speakTime,
+                  icon: const Icon(Icons.volume_up),
+                  label: const Text("Listen"),
+                ),
+                const SizedBox(width: 12),
+                ElevatedButton.icon(
+                  onPressed: learned,
+                  icon: const Icon(Icons.star),
+                  label: const Text("I learned it!"),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            ElevatedButton(
+              onPressed: nextTime,
+              child: const Text(
+                "Next Time ➡️",
+                style: TextStyle(fontSize: 18),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            Text(
+              "⭐ Score: $score",
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
