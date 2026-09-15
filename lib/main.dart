@@ -18,7 +18,7 @@ class AppProgress {
       _prefs?.getString('adina_mood') ?? "happy";
 
   static Future<void> setAdinaMood(String mood) async {
-    await _prefs?.setString('adina_mood', mood);
+    await AppProgress.setAdinaMood(mood);
   }
 
   static Future<void> setStars(int value) async {
@@ -197,7 +197,7 @@ class AdinaCharacter {
   static String currentMood = "happy";
 
   static Future<void> loadMood() async {
-    currentMood = _prefs?.getString('adina_mood') ?? "happy";
+    currentMood = AppProgress.getAdinaMood();
     moodNotifier.value = currentMood;
   }
 
@@ -205,7 +205,7 @@ class AdinaCharacter {
     if (moods.contains(mood)) {
       currentMood = mood;
       moodNotifier.value = mood;
-      _prefs?.setString('adina_mood', mood);
+      AppProgress.setAdinaMood(mood);
     }
   }
 
