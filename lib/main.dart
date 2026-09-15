@@ -2540,7 +2540,7 @@ class _StoryReaderPageState extends State<StoryReaderPage> {
 
       await _savePosition();
     } else {
-      AdinaCharacter.setMood("excited");
+      AdinaCharacter.setMood("proud");
       await AppProgress.addReward(2);
 
       if (mounted) {
