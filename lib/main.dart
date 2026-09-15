@@ -174,53 +174,36 @@ class Voice {
   }
 }
 
+class AdinaCharacter {
+  static const String name = "Adina";
+  static const String photo = "assets/images/adina.jpg";
+
+  static const List<String> moods = [
+    "happy",
+    "excited",
+    "proud",
+    "sleepy",
+    "thinking",
+  ];
+
+  static String greeting(String mood) {
+    switch (mood) {
+      case "excited":
+        return "I am ready to learn! 🌈";
+      case "proud":
+        return "I did it! ⭐";
+      case "sleepy":
+        return "Good night! 🌙";
+      case "thinking":
+        return "Hmm... let me think! 🤔";
+      default:
+        return "Hello! I am Adina! 👋";
+    }
+  }
+}
+
 class AdinaApp extends StatelessWidget {
   const AdinaApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: "Adina's Little World",
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Arial',
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.purple),
-      ),
-      home: const HomePage(),
-    );
-  }
-}
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int stars = AppProgress.stars;
-  int xp = AppProgress.xp;
-
-  Future<void> reward(int amount) async {
-    setState(() {
-      stars += amount;
-      AppProgress.setStars(stars);
-      xp += amount * 5;
-      AppProgress.setXp(xp);
-    });
-
-    await AppProgress.addDailyProgress();
-    await AppProgress.completeDailyMission();
-  }
-
-  void open(Widget page) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => page),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -257,9 +240,48 @@ class _HomePageState extends State<HomePage> {
                     CircleAvatar(
                       radius: 38,
                       backgroundImage:
-                          const AssetImage('assets/images/adina.jpg'),
+                          const AssetImage(AdinaCharacter.photo),
                     ),
                   ],
+                ),
+
+                const SizedBox(height: 18),
+
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.88),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 32,
+                        backgroundImage:
+                            const AssetImage(AdinaCharacter.photo),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AdinaCharacter.greeting("happy"),
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              "Let's learn and play together! 🌈",
+                              style: TextStyle(fontSize: 15),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 18),
 
