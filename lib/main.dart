@@ -14,6 +14,13 @@ class AppProgress {
   static int get xp => _prefs?.getInt('xp') ?? 35;
   static int get streak => _prefs?.getInt('streak') ?? 0;
 
+  static String getAdinaMood() =>
+      _prefs?.getString('adina_mood') ?? "happy";
+
+  static Future<void> setAdinaMood(String mood) async {
+    await _prefs?.setString('adina_mood', mood);
+  }
+
   static Future<void> setStars(int value) async {
     await _prefs?.setInt('stars', value);
   }
@@ -283,6 +290,20 @@ class AdinaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final xp = AppProgress.xp;
+    final stars = AppProgress.stars;
+
+    Future<void> reward(int amount) async {
+      await AppProgress.addReward(amount);
+      await AppProgress.addDailyProgress();
+    }
+
+    void open(Widget page) {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (_) => page),
+      );
+    }
+
     final level = (xp ~/ 50) + 1;
 
     return Scaffold(
