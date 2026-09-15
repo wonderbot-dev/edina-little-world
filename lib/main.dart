@@ -186,15 +186,18 @@ class AdinaCharacter {
     "thinking",
   ];
 
+  static final ValueNotifier<String> moodNotifier = ValueNotifier<String>("happy");
   static String currentMood = "happy";
 
   static Future<void> loadMood() async {
     currentMood = _prefs?.getString('adina_mood') ?? "happy";
+    moodNotifier.value = currentMood;
   }
 
   static void setMood(String mood) {
     if (moods.contains(mood)) {
       currentMood = mood;
+      moodNotifier.value = mood;
       _prefs?.setString('adina_mood', mood);
     }
   }
@@ -282,12 +285,17 @@ class AdinaApp extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              AdinaCharacter.currentGreeting(),
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            ValueListenableBuilder<String>(
+                              valueListenable: AdinaCharacter.moodNotifier,
+                              builder: (context, mood, child) {
+                                return Text(
+                                  AdinaCharacter.greeting(mood),
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(height: 4),
                             const Text(
