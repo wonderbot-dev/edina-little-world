@@ -1814,7 +1814,41 @@ class ColorsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("🎨 Colors")),
-      body: GridView.builder(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Text("🎯", style: TextStyle(fontSize: 22)),
+                label: const Text(
+                  "Find the Color!",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FindPictureGame(
+                      title: "🎨 Find the Color",
+                      items: colors
+                          .map((e) => {
+                                "name": e["name"].toString(),
+                                "emoji": e["emoji"].toString(),
+                              })
+                          .toList(),
+                      onReward: onReward,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -1839,6 +1873,178 @@ class ColorsPage extends StatelessWidget {
             ),
           );
         },
+      ),
+    ),
+  ],
+),
+);
+}
+}
+
+class FindPictureGame extends StatefulWidget {
+  final String title;
+  final List<Map<String, String>> items;
+  final Function(int) onReward;
+
+  const FindPictureGame({
+    super.key,
+    required this.title,
+    required this.items,
+    required this.onReward,
+  });
+
+  @override
+  State<FindPictureGame> createState() => _FindPictureGameState();
+}
+
+class _FindPictureGameState extends State<FindPictureGame> {
+  late Map<String, String> target;
+  late List<Map<String, String>> options;
+  bool answered = false;
+  bool correct = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _newQuestion();
+  }
+
+  void _newQuestion() {
+    final shuffled = List<Map<String, String>>.from(widget.items)..shuffle();
+    target = shuffled.first;
+    options = shuffled.take(4).toList()..shuffle();
+    answered = false;
+    correct = false;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Voice.speak("Edina, which one is ${target["name"]}?");
+    });
+  }
+
+  void _answer(Map<String, String> item) {
+    if (answered) return;
+    setState(() {
+      answered = true;
+      correct = item["name"] == target["name"];
+    });
+    if (correct) {
+      widget.onReward(5);
+      Voice.speak("Great job, Edina!");
+    } else {
+      Voice.speak("Try again, Edina.");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.title)),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 12),
+            const Text(
+              "ادینا جان 🌸",
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF7C5CFC),
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              "کدومش",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              "${target["name"]} هست؟",
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF7C5CFC),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 14,
+                  mainAxisSpacing: 14,
+                ),
+                itemCount: options.length,
+                itemBuilder: (_, i) {
+                  final item = options[i];
+                  final isTarget = item["name"] == target["name"];
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(24),
+                    onTap: () => _answer(item),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: answered && isTarget
+                              ? const Color(0xFF4CAF50)
+                              : Colors.transparent,
+                          width: 4,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            item["emoji"] ?? "❓",
+                            style: const TextStyle(fontSize: 58),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            item["name"] ?? "",
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            if (answered)
+              Column(
+                children: [
+                  Text(
+                    correct
+                        ? "🎉 آفرین ادینا جان!"
+                        : "💡 دوباره امتحان کن ادینا جان!",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: correct
+                          ? const Color(0xFF4CAF50)
+                          : const Color(0xFFFF9800),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () => setState(_newQuestion),
+                    child: const Text("Next ⭐"),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -1918,7 +2124,36 @@ class AnimalsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("🐾 Animals")),
-      body: GridView.builder(
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                icon: const Text("🎯", style: TextStyle(fontSize: 22)),
+                label: const Text(
+                  "Find the Animal!",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FindPictureGame(
+                      title: "🐾 Find the Animal",
+                      items: animals,
+                      onReward: onReward,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -1943,8 +2178,11 @@ class AnimalsPage extends StatelessWidget {
           );
         },
       ),
-    );
-  }
+    ),
+  ],
+),
+);
+}
 }
 
 class FamilyPage extends StatelessWidget {
@@ -3782,43 +4020,65 @@ class _TimePageState extends State<TimePage> {
                       ),
                     ),
 
+                  // Hour hand
                   Transform.rotate(
                     angle: hourAngle * 3.1415926535 / 180,
-                    child: Container(
-                      width: 7,
-                      height: 75,
+                    alignment: Alignment.center,
+                    child: Align(
                       alignment: Alignment.topCenter,
                       child: Container(
-                        width: 7,
-                        height: 55,
+                        width: 10,
+                        height: 82,
+                        margin: const EdgeInsets.only(top: 48),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
+                          color: const Color(0xFF7C5CFC),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
 
+                  // Minute hand
                   Transform.rotate(
                     angle: minuteAngle * 3.1415926535 / 180,
-                    child: Container(
-                      width: 5,
-                      height: 105,
+                    alignment: Alignment.center,
+                    child: Align(
                       alignment: Alignment.topCenter,
                       child: Container(
-                        width: 5,
-                        height: 85,
+                        width: 6,
+                        height: 108,
+                        margin: const EdgeInsets.only(top: 35),
                         decoration: BoxDecoration(
+                          color: const Color(0xFF252238),
                           borderRadius: BorderRadius.circular(8),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 4,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
 
+                  // Center pin
                   Container(
-                    width: 16,
-                    height: 16,
-                    decoration: const BoxDecoration(
+                    width: 20,
+                    height: 20,
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
+                      color: const Color(0xFFFFC857),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 3,
+                      ),
                     ),
                   ),
                 ],
