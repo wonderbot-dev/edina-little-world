@@ -163,7 +163,25 @@ class AppProgress {
   }
 }
 
-Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AdinaCharacter.loadMood(); await AppProgress.recordDailyActivity(); runApp(const MaterialApp(home: AdinaApp())); }
+Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AdinaCharacter.loadMood(); await AppProgress.recordDailyActivity(); runApp(
+    MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF8F7FC),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF7C5CFC),
+          brightness: Brightness.light,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          centerTitle: false,
+        ),
+      ),
+      home: const AdinaApp(),
+    ),
+  ); }
 
 class Voice {
   static final FlutterTts tts = FlutterTts();
@@ -307,6 +325,12 @@ class AdinaApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final xp = AppProgress.xp;
     final stars = AppProgress.stars;
+    final streak = AppProgress.streak;
+    final dailyProgress = AppProgress.dailyProgress;
+    final level = (xp ~/ 50) + 1;
+    final levelProgress = (xp % 50) / 50;
+    final dailyPercent =
+        (dailyProgress / AppProgress.dailyGoal).clamp(0.0, 1.0).toDouble();
 
     Future<void> reward(int amount) async {
       await AppProgress.addReward(amount);
@@ -319,141 +343,255 @@ class AdinaApp extends StatelessWidget {
       );
     }
 
-    final level = (xp ~/ 50) + 1;
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
             colors: [
-              Color(0xFFEDE7F6),
-              Color(0xFFFFF8E1),
-              Color(0xFFE8F5E9),
+              Color(0xFFF5F1FF),
+              Color(0xFFFFFBF0),
+              Color(0xFFEFFAF5),
             ],
           ),
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(18),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(18, 18, 18, 28),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      "Adina's\nLittle World 🌈",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Adina's",
+                            style: TextStyle(
+                              fontSize: 31,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.deepPurple.shade800,
+                              height: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 5),
+                          const Text(
+                            "Little World 🌈",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF3F3A4A),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    CircleAvatar(
-                      radius: 38,
-                      backgroundImage:
-                          const AssetImage(AdinaCharacter.photo),
+                    Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 14,
+                            offset: Offset(0, 5),
+                            color: Color(0x18000000),
+                          ),
+                        ],
+                      ),
+                      child: const CircleAvatar(
+                        radius: 31,
+                        backgroundImage:
+                            AssetImage(AdinaCharacter.photo),
+                      ),
                     ),
                   ],
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
 
+                // Adina hero
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.88),
-                    borderRadius: BorderRadius.circular(24),
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Color(0xFF8B6FF7),
+                        Color(0xFFB28CFF),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: const [
+                      BoxShadow(
+                        blurRadius: 22,
+                        offset: Offset(0, 10),
+                        color: Color(0x26000000),
+                      ),
+                    ],
                   ),
                   child: Row(
                     children: [
-                      CircleAvatar(
-                        radius: 32,
-                        backgroundImage:
-                            const AssetImage(AdinaCharacter.photo),
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(.92),
+                        ),
+                        child: const CircleAvatar(
+                          radius: 47,
+                          backgroundImage:
+                              AssetImage(AdinaCharacter.photo),
+                        ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 15),
                       Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ValueListenableBuilder<String>(
-                              valueListenable: AdinaCharacter.moodNotifier,
-                              builder: (context, mood, child) {
-                                return Text(
+                        child: ValueListenableBuilder<String>(
+                          valueListenable: AdinaCharacter.moodNotifier,
+                          builder: (context, mood, child) {
+                            return Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
                                   AdinaCharacter.greeting(mood),
                                   style: const TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    fontSize: 21,
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              "Let's learn and play together! 🌈",
-                              style: TextStyle(fontSize: 15),
-                            ),
-                          ],
+                                ),
+                                const SizedBox(height: 7),
+                                const Text(
+                                  "Let's learn, play and have fun together! ✨",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    height: 1.35,
+                                  ),
+                                ),
+                                const SizedBox(height: 13),
+                                GestureDetector(
+                                  onTap: () => Voice.speak(
+                                    "Let's learn and play together!",
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 13,
+                                      vertical: 8,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(.20),
+                                      borderRadius:
+                                          BorderRadius.circular(18),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.volume_up_rounded,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                        SizedBox(width: 6),
+                                        Text(
+                                          "Listen to Adina",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 18),
 
-                // Adina profile card
+                const SizedBox(height: 16),
+
+                // Progress card
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(17),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(.9),
-                    borderRadius: BorderRadius.circular(28),
+                    color: Colors.white.withOpacity(.94),
+                    borderRadius: BorderRadius.circular(27),
                     boxShadow: const [
                       BoxShadow(
-                        blurRadius: 15,
-                        color: Colors.black12,
-                        offset: Offset(0, 6),
+                        blurRadius: 18,
+                        offset: Offset(0, 7),
+                        color: Color(0x16000000),
                       ),
                     ],
                   ),
-                  child: Row(
+                  child: Column(
                     children: [
-                      const CircleAvatar(
-                        radius: 42,
-                        backgroundImage:
-                            AssetImage('assets/images/adina.jpg'),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Hello, Adina! 💕",
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Level $level",
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
-                            const SizedBox(height: 5),
-                            Text("Level $level • $xp XP"),
-                            const SizedBox(height: 8),
-                            LinearProgressIndicator(
-                              value: (xp % 50) / 50,
-                              minHeight: 8,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                          ],
+                          ),
+                          _HomeStat(
+                            icon: "⭐",
+                            value: "$stars",
+                            label: "Stars",
+                          ),
+                          const SizedBox(width: 14),
+                          _HomeStat(
+                            icon: "🔥",
+                            value: "$streak",
+                            label: "Streak",
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 13),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: LinearProgressIndicator(
+                          value: levelProgress,
+                          minHeight: 10,
+                          backgroundColor: const Color(0xFFEDEAF5),
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF8B6FF7),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Column(
+                      const SizedBox(height: 7),
+                      Row(
+                        mainAxisAlignment:
+                            MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text("⭐", style: TextStyle(fontSize: 25)),
                           Text(
-                            "$stars",
+                            "$xp XP",
                             style: const TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black54,
+                            ),
+                          ),
+                          Text(
+                            "${50 - (xp % 50)} XP to next level",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black45,
                             ),
                           ),
                         ],
@@ -462,7 +600,102 @@ class AdinaApp extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 16),
+
+                // Daily mission
+                Container(
+                  padding: const EdgeInsets.all(17),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF4D8),
+                    borderRadius: BorderRadius.circular(27),
+                    border: Border.all(
+                      color: const Color(0xFFFFD978),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 52,
+                        height: 52,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFFD978),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.flag_rounded,
+                          color: Color(0xFF805F00),
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 13),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Today's Mission 🎯",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              dailyProgress >= AppProgress.dailyGoal
+                                  ? "Mission complete! Amazing! 🌟"
+                                  : "$dailyProgress of ${AppProgress.dailyGoal} activities completed",
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            const SizedBox(height: 9),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: LinearProgressIndicator(
+                                value: dailyPercent,
+                                minHeight: 7,
+                                backgroundColor:
+                                    Colors.white.withOpacity(.8),
+                                valueColor:
+                                    const AlwaysStoppedAnimation<Color>(
+                                  Color(0xFFF2B632),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 22),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Choose an adventure",
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF3F3A4A),
+                      ),
+                    ),
+                    Text(
+                      "12 activities",
+                      style: TextStyle(
+                        color: Colors.deepPurple.shade400,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
 
                 GridView.count(
                   crossAxisCount: 2,
@@ -470,24 +703,31 @@ class AdinaApp extends StatelessWidget {
                   physics: const NeverScrollableScrollPhysics(),
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
-                  childAspectRatio: 1.08,
+                  childAspectRatio: 1.05,
                   children: [
                     MenuCard(
                       icon: "🎮",
                       title: "Play",
                       subtitle: "Fun Games",
-                      onTap: () => open(GamesPage(onReward: reward)),
+                      color: const Color(0xFFE9E1FF),
+                      onTap: () => open(
+                        GamesPage(onReward: reward),
+                      ),
                     ),
                     MenuCard(
                       icon: "📚",
                       title: "Learn",
                       subtitle: "New Words",
-                      onTap: () => open(LearnPage(onReward: reward)),
+                      color: const Color(0xFFDDF5FF),
+                      onTap: () => open(
+                        LearnPage(onReward: reward),
+                      ),
                     ),
                     MenuCard(
                       icon: "🎯",
                       title: "Daily Lesson",
                       subtitle: "Today's Mission",
+                      color: const Color(0xFFFFE9C7),
                       onTap: () => open(
                         DailyLessonPage(onReward: reward),
                       ),
@@ -496,42 +736,61 @@ class AdinaApp extends StatelessWidget {
                       icon: "🔤",
                       title: "Alphabet",
                       subtitle: "A to Z",
-                      onTap: () => open(AlphabetPage(onReward: reward)),
+                      color: const Color(0xFFE2F7E8),
+                      onTap: () => open(
+                        AlphabetPage(onReward: reward),
+                      ),
                     ),
                     MenuCard(
                       icon: "✍️",
                       title: "Spelling",
                       subtitle: "Build Words",
-                      onTap: () => open(SpellingPage(onReward: reward)),
+                      color: const Color(0xFFFFE0EA),
+                      onTap: () => open(
+                        SpellingPage(onReward: reward),
+                      ),
                     ),
                     MenuCard(
                       icon: "📖",
                       title: "Story",
                       subtitle: "Adina's Story",
-                      onTap: () => open(const StoryPage()),
+                      color: const Color(0xFFE5E7FF),
+                      onTap: () => open(
+                        const StoryPage(),
+                      ),
                     ),
                     MenuCard(
                       icon: "🎵",
                       title: "Songs",
                       subtitle: "Sing & Learn",
-                      onTap: () => open(const SongsPage()),
+                      color: const Color(0xFFFFE2D1),
+                      onTap: () => open(
+                        const SongsPage(),
+                      ),
                     ),
                     MenuCard(
                       icon: "🗣️",
                       title: "Speaking",
                       subtitle: "Listen & Speak",
-                      onTap: () => open(const SpeakingPage()),
+                      color: const Color(0xFFDDF6F0),
+                      onTap: () => open(
+                        const SpeakingPage(),
+                      ),
                     ),
-                                        MenuCard(
+                    MenuCard(
                       icon: "⏰",
                       title: "Time",
                       subtitle: "Learn the Clock",
-                      onTap: () => open(const TimePage()),
+                      color: const Color(0xFFE8E0FF),
+                      onTap: () => open(
+                        const TimePage(),
+                      ),
                     ),
-MenuCard(
+                    MenuCard(
                       icon: "🧠",
                       title: "Smart Review",
                       subtitle: "Practice Words",
+                      color: const Color(0xFFE0F0FF),
                       onTap: () => open(
                         SmartReviewPage(onReward: reward),
                       ),
@@ -540,12 +799,16 @@ MenuCard(
                       icon: "👨‍👩‍👧",
                       title: "Family",
                       subtitle: "Play Together",
-                      onTap: () => open(FamilyPage(onReward: reward)),
+                      color: const Color(0xFFFFE5EF),
+                      onTap: () => open(
+                        FamilyPage(onReward: reward),
+                      ),
                     ),
                     MenuCard(
                       icon: "⭐",
                       title: "My Progress",
                       subtitle: "My Little World",
+                      color: const Color(0xFFFFF0C9),
                       onTap: () => open(
                         ProgressPage(stars: stars, xp: xp),
                       ),
@@ -553,28 +816,51 @@ MenuCard(
                   ],
                 ),
 
-                const SizedBox(height: 18),
+                const SizedBox(height: 20),
 
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(18),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(.85),
-                    borderRadius: BorderRadius.circular(24),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF3F3A4A),
+                        Color(0xFF5A526B),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(27),
                   ),
-                  child: const Column(
+                  child: const Row(
                     children: [
                       Text(
-                        "🌟 Today's Adventure",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        "🌟",
+                        style: TextStyle(fontSize: 36),
                       ),
-                      SizedBox(height: 6),
-                      Text(
-                        "Play, listen, repeat and discover something new!",
-                        textAlign: TextAlign.center,
+                      SizedBox(width: 13),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Today's Adventure",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 19,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              "Play, listen, repeat and discover something new!",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 13,
+                                height: 1.3,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -588,10 +874,53 @@ MenuCard(
   }
 }
 
+class _HomeStat extends StatelessWidget {
+  final String icon;
+  final String value;
+  final String label;
+
+  const _HomeStat({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(icon, style: const TextStyle(fontSize: 20)),
+        const SizedBox(width: 4),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 16,
+              ),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 10,
+                color: Colors.black45,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
 class MenuCard extends StatelessWidget {
   final String icon;
   final String title;
   final String subtitle;
+  final Color color;
   final VoidCallback onTap;
 
   const MenuCard({
@@ -599,43 +928,74 @@ class MenuCard extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(25),
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(.9),
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: const [
-            BoxShadow(
-              blurRadius: 8,
-              color: Colors.black12,
-              offset: Offset(0, 4),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(25),
+        onTap: onTap,
+        child: Ink(
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(.94),
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(
+              color: color.withOpacity(.8),
+              width: 1.4,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(icon, style: const TextStyle(fontSize: 42)),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
+            boxShadow: [
+              BoxShadow(
+                blurRadius: 14,
+                offset: const Offset(0, 6),
+                color: color.withOpacity(.35),
               ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(13),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 62,
+                  height: 62,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    icon,
+                    style: const TextStyle(fontSize: 31),
+                  ),
+                ),
+                const SizedBox(height: 9),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF35313F),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Colors.black45,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            Text(
-              subtitle,
-              style: const TextStyle(color: Colors.grey),
-            ),
-          ],
+          ),
         ),
       ),
     );
