@@ -168,12 +168,27 @@ Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await App
 class Voice {
   static final FlutterTts tts = FlutterTts();
 
+  static const String language = 'en-US';
+  static const double normalRate = 0.38;
+  static const double slowRate = 0.30;
+  static const double childPitch = 1.02;
+
+  static Future<void> init() async {
+    await tts.setLanguage(language);
+    await tts.setSpeechRate(normalRate);
+    await tts.setPitch(childPitch);
+    await tts.awaitSpeakCompletion(true);
+  }
+
   static Future<void> speak(String text, {bool repeat = false}) async {
+    if (text.trim().isEmpty) return;
+
     await tts.stop();
-    await tts.setLanguage('en-US');
-    await tts.setSpeechRate(repeat ? 0.32 : 0.42);
-    await tts.setPitch(1.08);
-    await tts.speak(text);
+    await tts.setLanguage(language);
+    await tts.setSpeechRate(repeat ? slowRate : normalRate);
+    await tts.setPitch(childPitch);
+    await tts.awaitSpeakCompletion(true);
+    await tts.speak(text.trim());
   }
 
   static Future<void> stop() async {
