@@ -7,6 +7,8 @@ class AppProgress {
   static SharedPreferences? _prefs;
 
   static Future<void> init() async {
+    final voices = await tts.getVoices();
+    print('AVAILABLE VOICES: $voices');
     _prefs = await SharedPreferences.getInstance();
   }
 
@@ -163,7 +165,8 @@ class AppProgress {
   }
 }
 
-Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AdinaCharacter.loadMood(); await AppProgress.recordDailyActivity(); runApp(const MaterialApp(home: AdinaApp())); }
+Future<void> main() async { WidgetsFlutterBinding.ensureInitialized(); await AppProgress.init(); await AdinaCharacter.loadMood(); await AppProgress.recordDailyActivity();
+  await Voice.init(); runApp(const MaterialApp(home: AdinaApp())); }
 
 class Voice {
   static final FlutterTts tts = FlutterTts();
@@ -174,6 +177,8 @@ class Voice {
   static const double childPitch = 1.02;
 
   static Future<void> init() async {
+    final voices = await tts.getVoices();
+    print('AVAILABLE VOICES: $voices');
     await tts.setLanguage(language);
     await tts.setSpeechRate(normalRate);
     await tts.setPitch(childPitch);
