@@ -3,6 +3,53 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 
+enum GameMode {
+  findPicture,
+  chooseAnswer,
+  listening,
+  memory,
+  match,
+  wordBuilder,
+}
+
+class GameItem {
+  final String name;
+  final String emoji;
+  final String? meaning;
+  final String? audio;
+
+  const GameItem({
+    required this.name,
+    required this.emoji,
+    this.meaning,
+    this.audio,
+  });
+}
+
+class GameEngine {
+  static List<GameItem> prepareOptions({
+    required List<GameItem> items,
+    required GameItem target,
+    int count = 4,
+  }) {
+    final others = List<GameItem>.from(items)
+      ..removeWhere((item) => item.name == target.name)
+      ..shuffle();
+
+    final options = <GameItem>[target];
+    options.addAll(others.take(count - 1));
+    options.shuffle();
+    return options;
+  }
+
+  static bool isCorrect({
+    required GameItem selected,
+    required GameItem target,
+  }) {
+    return selected.name == target.name;
+  }
+}
+
 class AppProgress {
   static SharedPreferences? _prefs;
 
@@ -1912,7 +1959,30 @@ class _FindPictureGameState extends State<FindPictureGame> {
   void _newQuestion() {
     final shuffled = List<Map<String, String>>.from(widget.items)..shuffle();
     target = shuffled.first;
-    options = shuffled.take(4).toList()..shuffle();
+
+    final gameItems = shuffled.map((item) {
+      return GameItem(
+        name: item["name"] ?? "",
+        emoji: item["emoji"] ?? "",
+      );
+    }).toList();
+
+    final targetItem = gameItems.firstWhere(
+      (item) => item.name == target["name"],
+    );
+
+    final prepared = GameEngine.prepareOptions(
+      items: gameItems,
+      target: targetItem,
+    );
+
+    options = prepared.map((item) {
+      return <String, String>{
+        "name": item.name,
+        "emoji": item.emoji,
+      };
+    }).toList();
+
     answered = false;
     correct = false;
 
@@ -1925,7 +1995,18 @@ class _FindPictureGameState extends State<FindPictureGame> {
     if (answered) return;
     setState(() {
       answered = true;
-      correct = item["name"] == target["name"];
+      final selected = GameItem(
+      name: item["name"] ?? "",
+      emoji: item["emoji"] ?? "",
+    );
+    final targetGameItem = GameItem(
+      name: target["name"] ?? "",
+      emoji: target["emoji"] ?? "",
+    );
+    correct = GameEngine.isCorrect(
+      selected: selected,
+      target: targetGameItem,
+    );
     });
     if (correct) {
       widget.onReward(5);
